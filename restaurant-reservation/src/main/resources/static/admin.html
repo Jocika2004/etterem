@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>La Tavola | Adminisztráció</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f4ed;
+            color: #26342e;
+        }
+        header {
+            background: #193c32;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .logo { font: 26px Georgia, serif; }
+        .logo span { color: #d5a95f; }
+        header a { color: white; }
+        main { max-width: 1200px; margin: 35px auto; padding: 0 18px; }
+        h1, h2 { font-family: Georgia, serif; font-weight: normal; }
+        h1 { margin-bottom: 8px; }
+        h2 { margin-top: 0; }
+        .muted { color: #737b73; }
+        .panel, .stat {
+            background: white;
+            border: 1px solid #e2e5dc;
+            border-radius: 12px;
+            padding: 22px;
+            margin: 22px 0;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .stat-number { font-size: 30px; margin-top: 8px; font-weight: bold; }
+        .toolbar, .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        input, select, button {
+            font: inherit;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        input, select {
+            border: 1px solid #d4d9d0;
+            background: white;
+            max-width: 100%;
+        }
+        button {
+            border: 0;
+            background: #193c32;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background: #285546; }
+        button.secondary { background: #5e6e65; }
+        button.danger { background: #963e33; }
+        button:disabled { opacity: .5; cursor: wait; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e8e9e1;
+            vertical-align: top;
+        }
+        th {
+            background: #f0f2eb;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .status {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 5px 8px;
+            background: #fff0d4;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .status.CONFIRMED { background: #e1f4e5; }
+        .status.CANCELLED { background: #fce5e3; }
+        .message { margin: 14px 0; color: #737b73; }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 13px; }
+        .check { display: flex; align-items: center; gap: 7px; }
+        .check input { width: auto; }
+        @media (max-width: 650px) {
+            .stats { grid-template-columns: 1fr; }
+            .panel { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">La <span>Tavola.</span> | Admin</div>
+    <div>
+        <a href="/">Vissza a vendégoldalra</a>
+        <form action="/logout" method="post" style="display:inline">
+            <button type="submit" class="secondary">Kijelentkezés</button>
+        </form>
+    </div>
+</header>
+
+<main>
+    <h1>Éttermi adminisztráció</h1>
+    <p class="muted">Foglalások és éttermi asztalok kezelése.</p>
+
+    <section class="stats">
+        <div class="stat">
+            Összes foglalás
+            <div class="stat-number" id="totalCount">–</div>
+        </div>
+        <div class="stat">
+            Függőben
+            <div class="stat-number" id="pendingCount">–</div>
+        </div>
+        <div class="stat">
+            Megerősítve
+            <div class="stat-number" id="confirmedCount">–</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Foglalások</h2>
+        <div class="toolbar">
+            <input id="search" type="search" placeholder="Keresés név vagy e-mail alapján">
+            <input id="dateFilter" type="date" title="Szűrés dátum alapján">
+            <select id="statusFilter">
+                <option value="">Minden állapot</option>
+                <option value="PENDING">Függőben</option>
+                <option value="CONFIRMED">Megerősítve</option>
+                <option value="CANCELLED">Lemondva</option>
+            </select>
+            <button id="refreshButton" type="button">Frissítés</button>
+            <button id="clearFilters" class="secondary" type="button">Szűrők törlése</button>
+        </div>
+        <div id="reservationMessage" class="message" role="status"></div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Vendég</th>
+                    <th>Időpont</th>
+                    <th>Asztal</th>
+                    <th>Létszám</th>
+                    <th>Kérés</th>
+                    <th>Állapot</th>
+                    <th>Műveletek</th>
+                </tr>
+                </thead>
+                <tbody id="reservationRows"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Asztalok kezelése</h2>
+        <p class="muted">Új asztal felvétele vagy meglévő asztal módosítása.</p>
+
+        <form id="tableForm">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="tableNumber">Asztalszám</label>
+                    <input id="tableNumber" type="number" min="1" max="100" required>
+                </div>
+                <div class="field">
+                    <label for="capacity">Férőhely</label>
+                    <input id="capacity" type="number" min="1" max="20" required>
+                </div>
+                <label class="check">
+                    <input id="nearWindow" type="checkbox"> Ablak mellett
+                </label>
+                <label class="check">
+                    <input id="accessible" type="checkbox"> Akadálymentes
+                </label>
+            </div>
+            <button id="saveTableButton" type="submit">Asztal hozzáadása</button>
+            <button id="cancelEditButton" class="secondary" type="button" hidden>
+                Mégse
+            </button>
+        </form>
+
+        <div id="tableMessage" class="message" role="status"></div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Asztal</th>
+                    <th>Férőhely</th>
+                    <th>Ablak mellett</th>
+                    <th>Akadálymentes</th>
+                    <th>Műveletek</th>
+                </tr>
+                </thead>
+                <tbody id="tableRows"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    const rows = document.getElementById("reservationRows");
+    const reservationMessage = document.getElementById("reservationMessage");
+    const tableRows = document.getElementById("tableRows");
+    const tableMessage = document.getElementById("tableMessage");
+
+    let reservations = [];
+    let tables = [];
+    let editingTableId = null;
+
+    async function api(url, options = {}) {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...(options.body ? {"Content-Type": "application/json"} : {}),
+                ...(options.headers || {})
+            }
+        });
+
+        if (response.status === 204) return null;
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                result.detail || result.message ||
+                "A művelet nem sikerült (HTTP " + response.status + ")."
+            );
+        }
+
+        return result;
+    }
+
+    function cell(row, value) {
+        const td = document.createElement("td");
+        td.textContent = value ?? "–";
+        row.appendChild(td);
+        return td;
+    }
+
+    function statusLabel(status) {
+        return {
+            PENDING: "Függőben",
+            CONFIRMED: "Megerősítve",
+            CANCELLED: "Lemondva"
+        }[status] || status || "Ismeretlen";
+    }
+
+    function renderReservations() {
+        rows.replaceChildren();
+
+        const term = document.getElementById("search").value.trim().toLowerCase();
+        const date = document.getElementById("dateFilter").value;
+        const status = document.getElementById("statusFilter").value;
+
+        const filtered = reservations.filter(r =>
+            (!term ||
+                (r.guestName || "").toLowerCase().includes(term) ||
+                (r.email || "").toLowerCase().includes(term)) &&
+            (!date || (r.reservationDateTime || "").slice(0, 10) === date) &&
+            (!status || r.status === status)
+        );
+
+        document.getElementById("totalCount").textContent = reservations.length;
+        document.getElementById("pendingCount").textContent =
+            reservations.filter(r => r.status === "PENDING").length;
+        document.getElementById("confirmedCount").textContent =
+            reservations.filter(r => r.status === "CONFIRMED").length;
+
+        reservationMessage.textContent =
+            filtered.length + " foglalás jelenik meg a szűrés alapján.";
+
+        filtered.forEach(r => {
+            const tr = document.createElement("tr");
+
+            const guest = cell(tr, r.guestName);
+            const details = document.createElement("div");
+            details.className = "muted";
+            details.textContent = (r.email || "") + " " + (r.phone || "");
+            guest.appendChild(details);
+
+            cell(tr, r.reservationDateTime
+                ? r.reservationDateTime.replace("T", " ") : "–");
+
+            cell(tr, r.restaurantTable
+                ? "Asztal " + r.restaurantTable.tableNumber : "–");
+
+            cell(tr, (r.guestCount ?? "–") + " fő");
+            cell(tr, r.specialRequests || "–");
+
+            const statusCell = document.createElement("td");
+            const badge = document.createElement("span");
+            badge.className = "status " + (r.status || "");
+            badge.textContent = statusLabel(r.status);
+            statusCell.appendChild(badge);
+            tr.appendChild(statusCell);
+
+            const actions = document.createElement("td");
+
+            if (r.status === "PENDING") {
+                const confirmButton = document.createElement("button");
+                confirmButton.textContent = "Megerősítés";
+                confirmButton.addEventListener("click", () =>
+                    updateStatus(r.id, "CONFIRMED"));
+                actions.appendChild(confirmButton);
+            }
+
+            if (r.status !== "CANCELLED") {
+                const cancelButton = document.createElement("button");
+                cancelButton.textContent = "Lemondás";
+                cancelButton.className = "danger";
+                cancelButton.style.marginLeft = "5px";
+                cancelButton.addEventListener("click", async () => {
+                    if (confirm("Biztosan lemondod ezt a foglalást?")) {
+                        await updateStatus(r.id, "CANCELLED");
+                    }
+                });
+                actions.appendChild(cancelButton);
+            }
+
+            if (!actions.hasChildNodes()) actions.textContent = "–";
+            tr.appendChild(actions);
+            rows.appendChild(tr);
+        });
+    }
+
+    async function loadReservations() {
+        try {
+            reservations = await api("/api/reservations");
+            renderReservations();
+        } catch (error) {
+            reservationMessage.textContent = error.message;
+        }
+    }
+
+    async function updateStatus(id, status) {
+        try {
+            await api(
+                `/api/reservations/${id}/status?status=${encodeURIComponent(status)}`,
+                {method: "PATCH"}
+            );
+            await loadReservations();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function resetTableForm() {
+        editingTableId = null;
+        document.getElementById("tableForm").reset();
+        document.getElementById("saveTableButton").textContent = "Asztal hozzáadása";
+        document.getElementById("cancelEditButton").hidden = true;
+    }
+
+    function renderTables() {
+        tableRows.replaceChildren();
+
+        tables.forEach(table => {
+            const tr = document.createElement("tr");
+            cell(tr, table.tableNumber);
+            cell(tr, table.capacity + " fő");
+            cell(tr, table.nearWindow ? "Igen" : "Nem");
+            cell(tr, table.accessible ? "Igen" : "Nem");
+
+            const actions = document.createElement("td");
+
+            const edit = document.createElement("button");
+            edit.textContent = "Módosítás";
+            edit.addEventListener("click", () => {
+                editingTableId = table.id;
+                document.getElementById("tableNumber").value = table.tableNumber;
+                document.getElementById("capacity").value = table.capacity;
+                document.getElementById("nearWindow").checked = table.nearWindow;
+                document.getElementById("accessible").checked = table.accessible;
+                document.getElementById("saveTableButton").textContent =
+                    "Módosítás mentése";
+                document.getElementById("cancelEditButton").hidden = false;
+                document.getElementById("tableForm").scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            });
+
+            const remove = document.createElement("button");
+            remove.textContent = "Törlés";
+            remove.className = "danger";
+            remove.style.marginLeft = "5px";
+            remove.addEventListener("click", async () => {
+                if (!confirm(`Biztosan törlöd a ${table.tableNumber}. asztalt?`)) {
+                    return;
+                }
+
+                try {
+                    await api(`/api/admin/tables/${table.id}`, {method: "DELETE"});
+                    tableMessage.textContent = "Az asztal törölve.";
+                    await loadTables();
+                } catch (error) {
+                    tableMessage.textContent = error.message;
+                }
+            });
+
+            actions.append(edit, remove);
+            tr.appendChild(actions);
+            tableRows.appendChild(tr);
+        });
+    }
+
+    async function loadTables() {
+        try {
+            tables = await api("/api/admin/tables");
+            renderTables();
+        } catch (error) {
+            tableMessage.textContent = error.message;
+        }
+    }
+
+    document.getElementById("tableForm").addEventListener("submit", async event => {
+        event.preventDefault();
+
+        const data = {
+            tableNumber: Number(document.getElementById("tableNumber").value),
+            capacity: Number(document.getElementById("capacity").value),
+            nearWindow: document.getElementById("nearWindow").checked,
+            accessible: document.getElementById("accessible").checked
+        };
+
+        try {
+            const url = editingTableId
+                ? `/api/admin/tables/${editingTableId}`
+                : "/api/admin/tables";
+
+            await api(url, {
+                method: editingTableId ? "PUT" : "POST",
+                body: JSON.stringify(data)
+            });
+
+            tableMessage.textContent = editingTableId
+                ? "Az asztal módosítása sikerült."
+                : "Az új asztal létrejött.";
+
+            resetTableForm();
+            await loadTables();
+        } catch (error) {
+            tableMessage.textContent = error.message;
+        }
+    });
+
+    document.getElementById("cancelEditButton")
+        .addEventListener("click", resetTableForm);
+
+    document.getElementById("search")
+        .addEventListener("input", renderReservations);
+
+    document.getElementById("dateFilter")
+        .addEventListener("change", renderReservations);
+
+    document.getElementById("statusFilter")
+        .addEventListener("change", renderReservations);
+
+    document.getElementById("refreshButton")
+        .addEventListener("click", async () => {
+            await loadReservations();
+            await loadTables();
+        });
+
+    document.getElementById("clearFilters")
+        .addEventListener("click", () => {
+            document.getElementById("search").value = "";
+            document.getElementById("dateFilter").value = "";
+            document.getElementById("statusFilter").value = "";
+            renderReservations();
+        });
+
+    loadReservations();
+    loadTables();
+</script>
+</body>
+</html>

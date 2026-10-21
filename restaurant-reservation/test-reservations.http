@@ -1,0 +1,19 @@
+### Éttermi asztalok lekérése
+GET http://localhost:8080/api/tables
+
+### Új foglalás létrehozása
+POST http://localhost:8080/api/reservations
+Content-Type: application/json
+
+{
+  "guestName": "Teszt Elek",
+  "email": "teszt@example.com",
+  "phone": "+36301234567",
+  "reservationDateTime": "2026-11-01T18:00:00",
+  "guestCount": 2,
+  "tableId": 1,
+  "specialRequests": "Ez az első tesztfoglalásunk."
+}
+
+### Foglalások lekérése
+GET http://localhost:8080/api/reservations

@@ -1,0 +1,733 @@
+
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Tavola | Asztalfoglalás</title>
+
+    <style>
+        :root {
+            --green: #193c32;
+            --green-light: #285546;
+            --cream: #f7f4ed;
+            --gold: #d5a95f;
+            --text: #26342e;
+            --muted: #737b73;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--cream);
+            color: var(--text);
+        }
+
+        header {
+            background: var(--green);
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 27px;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: var(--gold);
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .hero {
+            background: var(--green);
+            color: white;
+            padding: 65px 7% 80px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .eyebrow {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: clamp(38px, 5vw, 64px);
+            line-height: 1.08;
+            font-weight: normal;
+            margin: 18px 0;
+        }
+
+        .hero p {
+            color: #e0e8e1;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+
+        .hero-note {
+            border-left: 3px solid var(--gold);
+            padding: 18px 22px;
+            background: rgba(255,255,255,0.06);
+            line-height: 1.8;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: -25px auto 60px;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 15px;
+            padding: 34px;
+            box-shadow: 0 12px 40px rgba(20, 45, 35, 0.10);
+        }
+
+        h2 {
+            font-family: Georgia, serif;
+            font-size: 30px;
+            font-weight: normal;
+            margin: 0 0 10px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            line-height: 1.7;
+            margin: 0 0 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field label {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid #d9ddd7;
+            border-radius: 7px;
+            padding: 13px;
+            background: white;
+            color: var(--text);
+            font: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid var(--gold);
+            outline-offset: 1px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .preferences {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px 24px;
+            padding: 18px 0;
+        }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 14px;
+        }
+
+        .check-label input {
+            width: auto;
+            accent-color: var(--green);
+        }
+
+        .primary-button {
+            border: 0;
+            border-radius: 7px;
+            padding: 15px 24px;
+            background: var(--green);
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .primary-button:hover {
+            background: var(--green-light);
+        }
+
+        .primary-button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .message {
+            display: none;
+            padding: 14px;
+            margin-top: 20px;
+            border-radius: 7px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .message.success {
+            display: block;
+            background: #e6f5e9;
+            color: #205d35;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff0ed;
+            color: #9b3024;
+        }
+
+        .tables-section {
+            margin-top: 55px;
+        }
+
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        .table-card {
+            background: white;
+            border: 1px solid #e4e4dc;
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .table-number {
+            font-family: Georgia, serif;
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .table-capacity {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 14px;
+        }
+
+        .tag {
+            background: #edf2ec;
+            color: #315343;
+            border-radius: 20px;
+            padding: 6px 9px;
+            font-size: 11px;
+        }
+
+        .loading {
+            color: var(--muted);
+            padding: 15px 0;
+        }
+
+        footer {
+            background: var(--green);
+            color: #dce5dc;
+            text-align: center;
+            padding: 28px 15px;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 18px 5%;
+            }
+
+            nav {
+                gap: 12px;
+            }
+
+            nav a {
+                font-size: 12px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 50px 6% 65px;
+                gap: 22px;
+            }
+
+            main {
+                padding: 0 14px;
+            }
+
+            .booking-card {
+                padding: 23px 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: auto;
+            }
+
+            .table-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .table-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">La <span>Tavola.</span></div>
+    <nav>
+        <a href="#foglalas">Asztalfoglalás</a>
+        <a href="#asztalok">Asztalaink</a>
+    </nav>
+</header>
+
+<section class="hero">
+    <div>
+        <div class="eyebrow">Üdvözlünk éttermünkben!</div>
+        <h1>Jó ételek.<br>Szép pillanatok.</h1>
+        <p>
+            Foglald le előre a helyed, válaszd ki a számodra
+            megfelelő asztalt, és élvezd az együtt töltött időt.
+        </p>
+    </div>
+
+    <div class="hero-note">
+        <strong>Asztalfoglalás egyszerűen</strong><br>
+        Válaszd ki az időpontot, add meg a vendégek számát,
+        és jelezd, ha különleges igényed van.
+    </div>
+</section>
+
+<main>
+    <section class="booking-card" id="foglalas">
+        <h2>Foglalj asztalt!</h2>
+        <p class="subtitle">
+            Töltsd ki az alábbi mezőket. A rendszer ellenőrzi
+            a választott asztal férőhelyét és foglaltságát.
+        </p>
+
+        <form id="reservationForm">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="guestName">Teljes név *</label>
+                    <input id="guestName" name="guestName"
+                           required maxlength="100"
+                           placeholder="Például Kovács Anna">
+                </div>
+
+                <div class="field">
+                    <label for="email">E-mail-cím *</label>
+                    <input id="email" name="email" type="email"
+                           required maxlength="150"
+                           placeholder="anna@example.com">
+                </div>
+
+                <div class="field">
+                    <label for="phone">Telefonszám *</label>
+                    <input id="phone" name="phone" type="tel"
+                           required maxlength="30"
+                           placeholder="+36 30 123 4567">
+                </div>
+
+                <div class="field">
+                    <label for="reservationDateTime">Dátum és időpont *</label>
+                    <input id="reservationDateTime"
+                           name="reservationDateTime"
+                           type="datetime-local" required>
+                </div>
+
+                <div class="field">
+                    <label for="guestCount">Vendégek száma *</label>
+                    <input id="guestCount" name="guestCount"
+                           type="number" min="1" max="20"
+                           value="2" required>
+                </div>
+
+                <div class="field">
+                    <label for="tableId">Asztal kiválasztása *</label>
+                    <select id="tableId" name="tableId" required>
+                        <option value="">Asztalok betöltése...</option>
+                    </select>
+                </div>
+
+                <div class="full-width">
+                    <label class="check-label">
+                        <input type="checkbox" id="nearWindow">
+                        Ablak melletti asztalt szeretnék
+                    </label>
+
+                    <label class="check-label" style="margin-top: 12px;">
+                        <input type="checkbox" id="accessible">
+                        Akadálymentesen megközelíthető asztalt szeretnék
+                    </label>
+                </div>
+
+                <div class="field full-width">
+                    <label for="specialRequests">
+                        Különleges kérések, megjegyzések
+                    </label>
+                    <textarea id="specialRequests"
+                              name="specialRequests" rows="3"
+                              maxlength="500"
+                              placeholder="Például születésnapi alkalom, gyerekülés..."></textarea>
+                </div>
+
+                <div class="full-width">
+                    <button class="primary-button" id="submitButton"
+                            type="submit">
+                        Foglalás elküldése
+                    </button>
+                    <div id="message" class="message"
+                         role="status" aria-live="polite"></div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="tables-section" id="asztalok">
+        <div class="eyebrow">Találd meg a helyed</div>
+        <h2>Asztalaink</h2>
+        <p class="subtitle">
+            Az étterem asztalai és azok főbb tulajdonságai.
+        </p>
+        <div id="tableGrid" class="table-grid">
+            <p class="loading">Asztalok betöltése...</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    La Tavola · Éttermi asztalfoglaló rendszer<br>
+    Egyetemi szoftverfejlesztési projekt
+</footer>
+
+<script>
+    const form = document.getElementById("reservationForm");
+    const tableSelect = document.getElementById("tableId");
+    const tableGrid = document.getElementById("tableGrid");
+    const message = document.getElementById("message");
+    const submitButton = document.getElementById("submitButton");
+
+    let tables = [];
+
+    function localDateTimeValue(date) {
+        const pad = number => String(number).padStart(2, "0");
+
+        return date.getFullYear() + "-" +
+            pad(date.getMonth() + 1) + "-" +
+            pad(date.getDate()) + "T" +
+            pad(date.getHours()) + ":" +
+            pad(date.getMinutes());
+    }
+
+    // Alapértelmezett időpont: holnap 18:00.
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(18, 0, 0, 0);
+
+    const dateInput = document.getElementById("reservationDateTime");
+    dateInput.min = localDateTimeValue(new Date());
+    dateInput.value = localDateTimeValue(tomorrow);
+
+    async function loadTables() {
+        try {
+            const response = await fetch("/api/tables");
+
+            if (!response.ok) {
+                throw new Error("Az asztalok nem tölthetők be.");
+            }
+
+            tables = await response.json();
+
+            renderTables();
+            updateTableOptions();
+        } catch (error) {
+            tableGrid.textContent =
+                "Nem sikerült betölteni az asztalokat. " +
+                "Ellenőrizd, hogy fut-e a szerver.";
+            tableSelect.innerHTML =
+                '<option value="">Az asztalok nem érhetők el</option>';
+        }
+    }
+
+    function renderTables() {
+        tableGrid.replaceChildren();
+
+        if (tables.length === 0) {
+            tableGrid.textContent = "Jelenleg nincs rögzített asztal.";
+            return;
+        }
+
+        tables.forEach(table => {
+            const card = document.createElement("article");
+            card.className = "table-card";
+
+            const number = document.createElement("div");
+            number.className = "table-number";
+            number.textContent = "Asztal " + table.tableNumber;
+
+            const capacity = document.createElement("div");
+            capacity.className = "table-capacity";
+            capacity.textContent = table.capacity + " férőhely";
+
+            const tags = document.createElement("div");
+            tags.className = "tags";
+
+            const addTag = text => {
+                const tag = document.createElement("span");
+                tag.className = "tag";
+                tag.textContent = text;
+                tags.appendChild(tag);
+            };
+
+            if (table.nearWindow) {
+                addTag("Ablak mellett");
+            }
+
+            if (table.accessible) {
+                addTag("Akadálymentes");
+            }
+
+            if (!table.nearWindow && !table.accessible) {
+                addTag("Kényelmes elhelyezés");
+            }
+
+            card.append(number, capacity, tags);
+            tableGrid.appendChild(card);
+        });
+    }
+    let availabilityRequest = 0;
+    async function updateTableOptions() {
+        const requestId = ++availabilityRequest;
+
+        const guestCount =
+            Number(document.getElementById("guestCount").value || 1);
+        const nearWindow = document.getElementById("nearWindow").checked;
+        const accessible = document.getElementById("accessible").checked;
+        const dateTime = dateInput.value;
+        const previousValue = tableSelect.value;
+
+        if (!dateTime) {
+            tableSelect.innerHTML =
+                '<option value="">Válassz dátumot és időpontot</option>';
+            return;
+        }
+
+        const params = new URLSearchParams({
+            dateTime: dateTime,
+            guestCount: String(guestCount),
+            nearWindow: String(nearWindow),
+            accessible: String(accessible)
+        });
+
+        tableSelect.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/api/tables/available?${params.toString()}`
+            );
+
+            if (!response.ok) {
+                throw new Error("Nem sikerült lekérni a szabad asztalokat.");
+            }
+
+            const suitable = await response.json();
+
+            // Egy korábbi, lassabban visszaérkező kérés eredményét
+            // ne engedjük felülírni az újabb kiválasztást.
+            if (requestId !== availabilityRequest) {
+                return;
+            }
+
+            tableSelect.replaceChildren();
+
+            const firstOption = document.createElement("option");
+            firstOption.value = "";
+            firstOption.textContent = suitable.length
+                ? "Válassz egy szabad asztalt..."
+                : "Nincs szabad, megfelelő asztal";
+            tableSelect.appendChild(firstOption);
+
+            suitable.forEach(table => {
+                const option = document.createElement("option");
+                option.value = table.id;
+                option.textContent =
+                    `Asztal ${table.tableNumber} – ${table.capacity} fő`;
+                tableSelect.appendChild(option);
+            });
+
+            if (suitable.some(
+                table => String(table.id) === previousValue
+            )) {
+                tableSelect.value = previousValue;
+            }
+        } catch (error) {
+            if (requestId !== availabilityRequest) {
+                return;
+            }
+
+            tableSelect.replaceChildren();
+
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "A szabad asztalok nem érhetők el";
+            tableSelect.appendChild(option);
+        } finally {
+            if (requestId === availabilityRequest) {
+                tableSelect.disabled = false;
+            }
+        }
+    }
+
+
+    document.getElementById("guestCount")
+        .addEventListener("input", updateTableOptions);
+
+    document.getElementById("nearWindow")
+        .addEventListener("change", updateTableOptions);
+
+    document.getElementById("accessible")
+        .addEventListener("change", updateTableOptions);
+
+    dateInput.addEventListener("change", updateTableOptions);
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "message " + type;
+    }
+
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+
+        if (!form.reportValidity()) {
+            return;
+        }
+
+        const selectedTable = tableSelect.value;
+
+        if (!selectedTable) {
+            showMessage("Kérlek, válassz egy megfelelő asztalt.", "error");
+            return;
+        }
+
+        const reservation = {
+            guestName: document.getElementById("guestName").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            reservationDateTime: dateInput.value,
+            guestCount: Number(document.getElementById("guestCount").value),
+            tableId: Number(selectedTable),
+            nearWindow: document.getElementById("nearWindow").checked,
+            accessible: document.getElementById("accessible").checked,
+            specialRequests:
+                document.getElementById("specialRequests").value.trim()
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Foglalás feldolgozása...";
+
+        try {
+            const response = await fetch("/api/reservations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reservation)
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(
+                    result.detail ||
+                    result.message ||
+                    "A foglalás nem sikerült. Kérjük, ellenőrizd az adatokat."
+                );
+            }
+
+            showMessage(
+                "Sikeres foglalás! Foglalási azonosító: " +
+                result.id + ". Állapot: " + result.status + ".",
+                "success"
+            );
+
+            form.reset();
+
+            tomorrow.setDate(new Date().getDate() + 1);
+            tomorrow.setHours(18, 0, 0, 0);
+
+            dateInput.min = localDateTimeValue(new Date());
+            dateInput.value = localDateTimeValue(tomorrow);
+
+            document.getElementById("guestCount").value = "2";
+            updateTableOptions();
+
+        } catch (error) {
+            showMessage(error.message, "error");
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Foglalás elküldése";
+        }
+    });
+
+    loadTables();
+</script>
+
+</body>
+</html>
